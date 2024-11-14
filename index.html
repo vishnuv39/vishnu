@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduVance - Solution with Hints</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- MathJax configuration for rendering mathematical expressions -->
+    <script type="text/javascript">
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']],
+                macros: {
+                    rrnum: "\\mathbb{R}"
+                }
+            },
+            options: {
+                renderActions: {
+                    addMenu: [0]  // Disable MathJax contextual menu
+                }
+            },
+            chtml: {
+                displayAlign: 'center',  // Center align display-mode equations
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Axios for HTTP requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body onload="showDisclaimer()">
+
+    <!-- Background Image -->
+    <img src="{{ url_for('static', filename='background.jpg') }}" alt="Background" class="background-image">
+
+    <!-- Google Form Prompt (displayed after returning home multiple times) -->
+    <div class="google-form-container" id="googleFormContainer" style="display: none;">
+        <h2>User Feedback</h2>
+        <p>We value your feedback! Please take a moment to complete our feedback form.</p>
+        <a href="https://forms.gle/cjTVjNH1FvfyoGud9" target="_blank">Fill out the form</a>
+        <p class="mandatory-label">This is a compulsory step.</p>
+        <button onclick="hideFormPrompt()">I have submitted the form</button>
+    </div>
+
+    <!-- Navigation Links (Visible Only on Home Page) -->
+    <div class="top-links" id="homeLinks">
+        <span class="link" onclick="showContent('manual')">Manual</span>
+        <span class="link" onclick="showContent('about')">About Us</span>
+    </div>
+
+    <!-- Home Page (Question Page) -->
+    <div class="container" id="homePage">
+        <!-- Logo in the center of the homepage -->
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="App Logo" class="app-logo">
+        </div>
+
+        <!-- Question Input Box -->
+        <div class="question-box">
+            <textarea id="questionInput" placeholder="Ask Your Question"></textarea>
+            <div id="latexDisplay" style="margin-top: 10px; color: #333;"></div> <!-- Display for MathJax-rendered LaTeX -->
+            <img src="{{ url_for('static', filename='search-icon.png') }}" alt="Search" class="icon" onclick="submitQuestion()">
+            <img src="{{ url_for('static', filename='mic-icon.png') }}" alt="Mic" class="icon" onclick="startVoiceInput()">
+            <img src="{{ url_for('static', filename='photo-icon.png') }}" alt="Photo" class="icon" onclick="document.getElementById('photoUpload').click()">
+            <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+        </div>
+       
+        <!-- Advisory Note for Manual Reference -->
+        <div class="manual-reference">
+            <p>Please view the Manual before using the application.</p>
+        </div>
+    </div>
+
+    <!-- Solution Page with Hints -->
+    <div class="container" id="solutionPage" style="display:none;">
+        <!-- Return Icon at the Top Right -->
+        <img src="{{ url_for('static', filename='return-icon.png') }}" alt="Return to Home" class="icon return-icon" onclick="returnToHome()">
+
+        <div class="solution-panel">
+            <!-- Solution Container -->
+            <div class="solution-container">
+                <h2>Solution</h2>
+                <div class="solution-box" id="solutionContent">
+                    <!-- Solution steps will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Hints Panel -->
+            <div class="hints-container">
+                <h2>Hints</h2>
+                <div id="hintsContent">
+                    <!-- Hints will be displayed here when a step is clicked -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Sections for Disclaimer, Manual, and About Us -->
+    <div class="content-box" id="disclaimerContent" style="display:none;">
+        <img src="{{ url_for('static', filename='close-icon.png') }}" alt="Close" class="icon close-icon" onclick="closeDisclaimer()">
+        <h2>Disclaimer</h2>
+        <p>Note: The explanations provided in this application are AI-generated and may not guarantee 100% accuracy. Please verify critical information as needed. We aim to assist in understanding concepts effectively.</p>
+    </div>
+
+    <div class="content-box" id="manualContent" style="display:none;">
+        <img src="{{ url_for('static', filename='close-icon.png') }}" alt="Close" class="icon close-icon" onclick="closeContentBox()">
+        <h2>Manual</h2>
+        <p>Follow these steps to effectively use the EduVance application:</p>
+        <p><strong>Submit a Question:</strong> Type your question in the text box or use the microphone icon to voice your question. Once entered, click the search icon to submit. Please allow a few seconds for the solution to load.</p>
+        <p><strong>View Complete Solution:</strong> The complete solution will appear on the screen, broken down into easy-to-follow steps. Read through each step to understand the full solution to your question.</p>
+        <p><strong>Select the Step for More Help:</strong> If a specific step is confusing, click on that step. This action will generate the first hint for additional clarification on that particular part of the solution.</p>
+        <p><strong>Request Follow-Up Hints:</strong> If the initial hint doesn’t provide enough clarity, click on the same step again. Each click will reveal another level of hint, offering more detailed assistance until you feel confident with the step.</p>
+        <p><strong>Progressive Hint Levels:</strong> Each step has multiple levels of hints, progressively building on the previous explanations. This ensures you receive increasingly detailed guidance to understand each part fully.</p>
+        <p>Following these steps will help you make the most of EduVance and ensure a smooth learning experience. If you encounter any issues, refer back to this manual for guidance.</p>
+    </div>
+
+    <div class="content-box" id="aboutContent" style="display:none;">
+        <img src="{{ url_for('static', filename='close-icon.png') }}" alt="Close" class="icon close-icon" onclick="closeContentBox()">
+        <h2>About Us</h2>
+        <p>EduVance is designed to help students gain a deeper understanding of complex subjects by providing step-by-step solutions and interactive hints for each problem. We aim to empower learners with the resources they need to succeed academically.</p>
+    </div>
+
+    <!-- JavaScript for handling interactions, submitting questions, and displaying solutions -->
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
+
